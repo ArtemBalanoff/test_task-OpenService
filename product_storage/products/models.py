@@ -1,34 +1,34 @@
 from django.db import models
-from django.core.validators import RegexValidator
 from product_storage.constants import (PRODUCT_NAME_MAX_LENGTH,
                                        PRODUCT_TYPE_NAME_MAX_LENGTH,
-                                       BARCODE_MAX_LENGTH,
+                                       BARCODE_LENGTH_1,
+                                       BARCODE_LENGTH_2,
                                        PRICE_DECIMAL_PLACES,
-                                       PRICE_MAX_DIGITS)
+                                       PRICE_MAX_DIGITS,
+                                       LONG_NAME_LENGTH_LIMIT as LEN_LIM)
+from product_storage.products.validators import barcode_regex_validator
 
 
 class Product(models.Model):
     name = models.CharField('Название',
                             max_length=PRODUCT_NAME_MAX_LENGTH)
-    price = models.OneToOneField('Price', on_delete=models.CASCADE,
-                                 verbose_name='Цена')
     amount = models.PositiveSmallIntegerField('Количество')
-    barcode = models.CharField(
-        'Штрихкод', max_length=BARCODE_MAX_LENGTH,
-        validators=RegexValidator(
-            regex=r'^\d{8}|\d{13}$', message='Штрихкод должен иметь длину'
-            '8 или 13 символов и состоять из цифр'),
-        db_index=True)
+    barcode = models.CharField('Штрихкод', max_length=max(BARCODE_LENGTH_1,
+                                                          BARCODE_LENGTH_2),
+                               validators=(barcode_regex_validator,),
+                               db_index=True)
     date_updated = models.DateTimeField('Дата обновления', auto_now=True)
-    type = models.ForeignKey('ProductType', on_delete=models.PROTECT)
+    type = models.ForeignKey('ProductType', on_delete=models.PROTECT,
+                             verbose_name='Тип товара')
 
     class Meta:
         verbose_name = 'товар'
         verbose_name_plural = 'Товары'
-        ordering = ('date_updated',)
+        ordering = ('-date_updated',)
 
     def __str__(self):
-        return self.name.split()[:5]
+        name = self.name
+        return name[:LEN_LIM] + '...' if len(name) > LEN_LIM else name
 
 
 class ProductType(models.Model):
@@ -42,7 +42,8 @@ class ProductType(models.Model):
         ordering = ('name',)
 
     def __str__(self):
-        return self.name.split()[:5]
+        name = self.name
+        return name[:LEN_LIM] + '...' if len(name) > LEN_LIM else name
 
 
 class ProductPrice(models.Model):
@@ -60,6 +61,8 @@ class ProductPrice(models.Model):
     price = models.DecimalField('Цена',
                                 max_digits=PRICE_MAX_DIGITS,
                                 decimal_places=PRICE_DECIMAL_PLACES)
+    product = models.OneToOneField(Product, on_delete=models.CASCADE,
+                                   related_name='price', verbose_name='Товар')
 
     class Meta:
         verbose_name = 'стоимость'
