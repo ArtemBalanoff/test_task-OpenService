@@ -1,11 +1,10 @@
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from .filters import ProductFilter
-from products.models import Product, ProductPrice, ProductType
+from products.models import Product, ProductType
 from .serializers import (ProductCreateReadSerializer,
                           ProductUpdateSerializer,
                           ProductTypeSerializer,
-                          ProductPriceSerializer,
                           ProductUpdateAmountSerializer)
 from rest_framework.response import Response
 from http import HTTPStatus
@@ -18,6 +17,9 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering_fields = ('name', 'date_updated', 'price__price')
 
     def get_queryset(self):
+        '''Даем возможность обращаться к цене не через
+        price__price, а через price'''
+
         queryset = Product.objects.select_related('price', 'type')
         ordering = self.request.query_params.get('ordering')
         if ordering:
@@ -34,6 +36,9 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=('PATCH',))
     def update_amount(self, request, pk):
+        '''Метод для относительного изменения количества
+        товара (+50, -100 и т.д.)'''
+
         instance = self.get_object()
         serializer = ProductUpdateAmountSerializer(instance=instance,
                                                    data=request.data)
@@ -48,6 +53,6 @@ class ProductTypeViewSet(viewsets.ModelViewSet):
     serializer_class = ProductTypeSerializer
 
 
-class ProductPriceViewSet(viewsets.ModelViewSet):
-    queryset = ProductPrice.objects.select_related('product')
-    serializer_class = ProductPriceSerializer
+# class ProductPriceViewSet(viewsets.ModelViewSet):
+#     queryset = ProductPrice.objects.select_related('product')
+#     serializer_class = ProductPriceSerializer

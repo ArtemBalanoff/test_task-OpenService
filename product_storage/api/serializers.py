@@ -28,13 +28,22 @@ class ProductCreateReadSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         price_data = validated_data.pop('price')
         product = super().create(validated_data)
-        ProductPrice.objects.create(**price_data, product=product)
+        price_data['product'] = product
+        ProductPriceSerializer().create(price_data)
         return product
 
 
 class ProductUpdateSerializer(ProductCreateReadSerializer):
+    '''Используем отдельный сериализатор для patch-запросов,
+    чтобы количество можно было изменять только относительно'''
+
     class Meta(ProductCreateReadSerializer.Meta):
         extra_kwargs = {'amount': {'read_only': True}}
+
+    def update(self, instance, validated_data):
+        price_data = validated_data.pop('price')
+        ProductPriceSerializer().update(instance.price, price_data)
+        return super().update(instance, validated_data)
 
 
 class ProductUpdateAmountSerializer(serializers.Serializer):

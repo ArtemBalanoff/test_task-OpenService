@@ -27,6 +27,12 @@ def product_type():
 
 
 @pytest.fixture
+def product_type_2():
+    return ProductType.objects.create(
+        name='Мебель', description='Изысканная мебель на любой вкус')
+
+
+@pytest.fixture
 def product(product_type):
     product = Product.objects.create(name='NokiaPhone',
                                      amount=50,
@@ -77,12 +83,15 @@ def product_list(product_type):
     return products
 
 
-# @pytest.fixture
-# def product_list_long_shuffled(product_type):
-#     product_list = [Product(name='same_name',
-#                             type=product_type,
-#                             amount=100,
-#                             barcode=str(12345678 + idx)) for idx in range(20)]
-#     shuffle(product_list)
-#     Product.objects.bulk_create(product_list)
-#     return Product.objects.all()
+@pytest.fixture
+def product_list_url():
+    return reverse('product-list')
+
+
+@pytest.fixture
+def product_detail_url(product):
+    return reverse('product-detail', args=(product.id,))
+
+@pytest.fixture
+def product_type_list_url():
+    return reverse('product_type-list')
