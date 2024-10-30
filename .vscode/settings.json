@@ -1,0 +1,7 @@
+{
+    "python.testing.pytestArgs": [
+        "product_storage"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}

@@ -6,7 +6,7 @@ from product_storage.constants import (PRODUCT_NAME_MAX_LENGTH,
                                        PRICE_DECIMAL_PLACES,
                                        PRICE_MAX_DIGITS,
                                        LONG_NAME_LENGTH_LIMIT as LEN_LIM)
-from product_storage.products.validators import barcode_regex_validator
+from products.validators import barcode_regex_validator
 
 
 class Product(models.Model):
@@ -20,6 +20,7 @@ class Product(models.Model):
     date_updated = models.DateTimeField('Дата обновления', auto_now=True)
     type = models.ForeignKey('ProductType', on_delete=models.PROTECT,
                              verbose_name='Тип товара')
+    is_active = models.BooleanField('Активный', default=True)
 
     class Meta:
         verbose_name = 'товар'

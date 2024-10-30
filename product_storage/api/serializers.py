@@ -16,7 +16,7 @@ class ProductCreateReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ('id', 'name', 'price', 'amount', 'barcode',
-                  'date_updated', 'type')
+                  'date_updated', 'type', 'is_active')
 
     def validate_barcode(self, barcode):
         try:
@@ -24,6 +24,12 @@ class ProductCreateReadSerializer(serializers.ModelSerializer):
         except ValidationError as e:
             raise serializers.ValidationError(e)
         return barcode
+
+    def create(self, validated_data):
+        price_data = validated_data.pop('price')
+        product = super().create(validated_data)
+        ProductPrice.objects.create(**price_data, product=product)
+        return product
 
 
 class ProductUpdateSerializer(ProductCreateReadSerializer):
@@ -46,6 +52,9 @@ class ProductUpdateAmountSerializer(serializers.Serializer):
         instance.amount += validated_data.get('amount_delta')
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        return ProductCreateReadSerializer(instance).data
 
 
 class ProductTypeSerializer(serializers.ModelSerializer):
