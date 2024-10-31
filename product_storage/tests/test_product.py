@@ -1,6 +1,8 @@
 from decimal import Decimal
 from http import HTTPStatus
+
 import pytest
+
 from products.models import Product
 
 

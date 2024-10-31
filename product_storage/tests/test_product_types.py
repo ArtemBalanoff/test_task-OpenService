@@ -1,5 +1,6 @@
-from products.models import ProductType
 from http import HTTPStatus
+
+from products.models import ProductType
 
 
 def test_create_product_type(api_client_with_jwt, product_type_list_url,

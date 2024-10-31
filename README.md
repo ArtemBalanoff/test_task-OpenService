@@ -23,11 +23,59 @@
 
 - **Python**
 - **Django REST Framework**
+- **Pytest**
 - **Git**
 - **SQLite**
 - **SimpleJWT**
 - **Djoser**
 - **Flake8**
+
+## Описание моделей
+
+### Product
+
+Модель товара, содержит основные данные о товаре.
+
+- **Поля**:
+  - `name`: Название товара.
+  - `amount`: Количество на складе.
+  - `barcode`: Штрихкод (с валидацией и индексом).
+  - `date_updated`: Дата обновления (автоматически).
+  - `type`: Тип товара (ссылка на `ProductType`).
+  - `is_active`: Статус активности.
+
+- **Метаданные**:
+  - `verbose_name`: "товар"
+  - `verbose_name_plural`: "Товары"
+  - `ordering`: Сортировка по дате обновления.
+
+### ProductType
+
+Тип товара с названием и описанием.
+
+- **Поля**:
+  - `name`: Название типа.
+  - `description`: Описание.
+
+- **Метаданные**:
+  - `verbose_name`: "тип товара"
+  - `verbose_name_plural`: "Типы товаров"
+  - `ordering`: По названию.
+
+### ProductPrice
+
+Цена товара с указанием валюты.
+
+- **Поля**:
+  - `currency`: Валюта (RUB, USD, EUR, CNY).
+  - `price`: Цена.
+  - `product`: Привязка к товару (связь `OneToOne`).
+
+- **Метаданные**:
+  - `verbose_name`: "стоимость"
+  - `verbose_name_plural`: "Стоимости"
+  - `ordering`: По цене.
+
 
 ## Как запустить проект
 
@@ -58,7 +106,13 @@
     python3 manage.py migrate
     ```
 
-5. **Запустить проект:**
+5. **Запустить Pytest тесты:**
+
+    ```bash
+    pytest
+    ```
+
+6. **Запустить проект:**
 
     ```bash
     python3 manage.py runserver

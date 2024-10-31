@@ -1,7 +1,8 @@
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
+
 from products.models import Product, ProductPrice, ProductType
 from products.validators import barcode_regex_validator
-from django.core.exceptions import ValidationError
 
 
 class ProductPriceSerializer(serializers.ModelSerializer):

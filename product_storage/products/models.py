@@ -1,11 +1,10 @@
 from django.db import models
-from product_storage.constants import (PRODUCT_NAME_MAX_LENGTH,
-                                       PRODUCT_TYPE_NAME_MAX_LENGTH,
-                                       BARCODE_LENGTH_1,
-                                       BARCODE_LENGTH_2,
-                                       PRICE_DECIMAL_PLACES,
-                                       PRICE_MAX_DIGITS,
-                                       LONG_NAME_LENGTH_LIMIT as LEN_LIM)
+
+from product_storage.constants import BARCODE_LENGTH_1, BARCODE_LENGTH_2
+from product_storage.constants import LONG_NAME_LENGTH_LIMIT as LEN_LIM
+from product_storage.constants import (PRICE_DECIMAL_PLACES, PRICE_MAX_DIGITS,
+                                       PRODUCT_NAME_MAX_LENGTH,
+                                       PRODUCT_TYPE_NAME_MAX_LENGTH)
 from products.validators import barcode_regex_validator
 
 

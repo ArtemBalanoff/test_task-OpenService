@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import Product, ProductType, ProductPrice
 from django.contrib.auth.models import Group
 
+from .models import Product, ProductPrice, ProductType
 
 admin.site.unregister(Group)
 

@@ -1,15 +1,20 @@
-from products.models import Product
 from http import HTTPStatus
 
+import pytest
 
+from products.models import Product
+
+
+@pytest.mark.parametrize('invalid_barcode', ('abc', '1' * 7, '1' * 12))
 def test_create_product_incorrect_barcode(api_client_with_jwt,
                                           product_create_data,
-                                          product_list_url):
+                                          product_list_url,
+                                          invalid_barcode):
     '''Тест ожидает ошибку при вводе некорректного штрихкода'''
 
     Product.objects.all().delete()
     data = product_create_data
-    data['barcode'] = '123456789'  # invalid barcode
+    data['barcode'] = invalid_barcode
 
     # Проверяем, что товар не был создан
     response = api_client_with_jwt.post(product_list_url, data, format='json')

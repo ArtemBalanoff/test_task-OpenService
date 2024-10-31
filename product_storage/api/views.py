@@ -1,16 +1,17 @@
+from http import HTTPStatus
+
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.decorators import action
-from .filters import ProductFilter
-from products.models import Product, ProductType
-from .serializers import (ProductBulkCreateSerializer,
-                          ProductCreateReadSerializer,
-                          ProductUpdateSerializer,
-                          ProductTypeSerializer,
-                          ProductUpdateAmountSerializer)
 from rest_framework.response import Response
-from http import HTTPStatus
-from django_filters.rest_framework import DjangoFilterBackend
+
+from products.models import Product, ProductType
+from .filters import ProductFilter
 from .mixins import CRUDWithoutPUT
+from .serializers import (ProductBulkCreateSerializer,
+                          ProductCreateReadSerializer, ProductTypeSerializer,
+                          ProductUpdateAmountSerializer,
+                          ProductUpdateSerializer)
 
 
 class ProductViewSet(CRUDWithoutPUT):

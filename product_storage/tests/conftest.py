@@ -1,11 +1,11 @@
 from http import HTTPStatus
-from random import shuffle
-from django.urls import reverse
-import pytest
-from rest_framework.test import APIClient
-from products.models import Product, ProductType, ProductPrice
-from django.contrib.auth import get_user_model
 
+import pytest
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+from rest_framework.test import APIClient
+
+from products.models import Product, ProductPrice, ProductType
 
 User = get_user_model()
 
