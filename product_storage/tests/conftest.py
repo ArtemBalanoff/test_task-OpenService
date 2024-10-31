@@ -45,17 +45,17 @@ def product(product_type):
     return product
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_user_data():
     return {'username': 'test_user', 'password': 'test_pass'}
 
 
-@pytest.fixture
+@pytest.fixture()
 def user(test_user_data):
     return User.objects.create_user(**test_user_data)
 
 
-@pytest.fixture
+@pytest.fixture()
 def api_client_with_jwt(user, test_user_data):
     client = APIClient()
     url = reverse('jwt-create')

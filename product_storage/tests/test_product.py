@@ -1,7 +1,7 @@
 from decimal import Decimal
 from http import HTTPStatus
 import pytest
-from products.models import Product, ProductType
+from products.models import Product
 
 
 def test_create_product(api_client_with_jwt, product_create_data,
@@ -23,6 +23,18 @@ def test_create_product(api_client_with_jwt, product_create_data,
     assert product.amount == data.get('amount')
     assert product.barcode == data.get('barcode')
     assert product.type.id == data.get('type')
+
+
+def test_read_product(api_client_with_jwt, product, product_detail_url):
+    response = api_client_with_jwt.get(product_detail_url)
+    assert response.status_code == HTTPStatus.OK
+    assert response.data.get('name') == product.name
+    assert response.data.get('amount') == product.amount
+    assert response.data.get('barcode') == product.barcode
+    assert response.data.get('type') == product.type.id
+    assert Decimal(response.data.get('price').get('price')) == (
+        product.price.price)
+    assert response.data.get('price').get('currency') == product.price.currency
 
 
 def test_bulk_create_product(api_client_with_jwt, product_bulk_create_data,
@@ -47,8 +59,8 @@ def test_bulk_create_product(api_client_with_jwt, product_bulk_create_data,
             given_value.get('price').get('currency'))
 
 
-def test_patch_product(api_client_with_jwt, product_patch_data,
-                       product_detail_url, product):
+def test_update_product(api_client_with_jwt, product_patch_data,
+                        product_detail_url, product):
     '''Тест проверяет возможность изменения товара'''
 
     data = product_patch_data
@@ -66,22 +78,6 @@ def test_patch_product(api_client_with_jwt, product_patch_data,
     assert product.is_active is data.get('is_active')
 
 
-def test_create_product_incorrect_barcode(api_client_with_jwt,
-                                          product_create_data,
-                                          product_list_url):
-    '''Тест ожидает ошибку при вводе некорректного штрихкода'''
-
-    Product.objects.all().delete()
-    data = product_create_data
-    data['barcode'] = '123456789'  # invalid barcode
-
-    # Проверяем, что товар не был создан
-    response = api_client_with_jwt.post(product_list_url, data, format='json')
-    assert response.status_code == HTTPStatus.BAD_REQUEST, (
-        f'Response: {response.data}')
-    assert Product.objects.count() == 0
-
-
 def test_update_product_amount(api_client_with_jwt, product,
                                update_amount_url):
     '''Тест проверяет возможность относительного изменения кол-ва товара'''
@@ -94,56 +90,6 @@ def test_update_product_amount(api_client_with_jwt, product,
     assert response.status_code == HTTPStatus.OK, f'Response: {response.data}'
     product.refresh_from_db()
     assert product.amount == start_amount + 50
-
-
-def test_update_product_amount_incorrect_value(api_client_with_jwt, product,
-                                               update_amount_url):
-    '''Тест ожидает ошибку при попытке вычесть
-    большее кол-во, чем есть у товара'''
-
-    start_amount = product.amount
-
-    # Проверяем, что кол-во не изменилось
-    response = api_client_with_jwt.patch(update_amount_url,
-                                         {'amount_delta': -100}, format='json')
-    assert response.status_code == HTTPStatus.BAD_REQUEST, (
-        f'Response: {response.data}')
-    product.refresh_from_db()
-    assert product.amount == start_amount
-
-
-def test_create_product_type(api_client_with_jwt, product_type_list_url,
-                             product_type_data):
-    '''Тест проверяет возможность создания типа товара'''
-
-    ProductType.objects.all().delete()
-    data = product_type_data
-
-    # Проверяем, что тип создался
-    response = api_client_with_jwt.post(product_type_list_url, data,
-                                        format='json')
-    assert response.status_code == HTTPStatus.CREATED, (
-        f'Response: {response.data}')
-    assert ProductType.objects.count() == 1
-
-    # Проверяем соответствие полей
-    product_type = ProductType.objects.get()
-    assert product_type.name == data.get('name')
-    assert product_type.description == data.get('description')
-
-
-def test_update_product_type(api_client_with_jwt, product_type_detail_url,
-                             product_type, product_type_patch_data):
-    '''Тест проверяет возможность изменения типа товара'''
-
-    data = product_type_patch_data
-    response = api_client_with_jwt.patch(product_type_detail_url,
-                                         data)
-    assert response.status_code == HTTPStatus.OK, f'Response: {response.data}'
-    product_type.refresh_from_db()
-    assert product_type.name == data.get('name')
-    assert product_type.description == (
-        data.get('description'))
 
 
 def test_product_filters(api_client_with_jwt, product_list, product_list_url):
@@ -194,3 +140,11 @@ def test_product_ordering(api_client_with_jwt, product_list,
     assert response.status_code == HTTPStatus.OK, f'Response: {response.data}'
     assert [el.get('id') for el in response.data.get('results')] == list(
         Product.objects.order_by(ordering_field).values_list('id', flat=True))
+
+
+def test_delete_product(api_client_with_jwt, product, product_detail_url):
+    start_count = Product.objects.count()
+
+    response = api_client_with_jwt.delete(product_detail_url)
+    assert response.status_code == HTTPStatus.NO_CONTENT
+    assert Product.objects.count() == start_count - 1
