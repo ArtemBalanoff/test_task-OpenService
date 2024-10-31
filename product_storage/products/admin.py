@@ -12,12 +12,20 @@ class ProductPriceInLine(admin.StackedInline):
     extra = 1
 
 
+class ProductInLine(admin.StackedInline):
+    model = Product
+    can_delete = False
+    extra = 0
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     inlines = (ProductPriceInLine,)
-    list_display = ('get_short_name', 'get_price', 'amount', 'barcode', 'type')
-    list_editable = ('amount',)
-    list_filter = ('type',)
+    list_display = ('get_short_name', 'get_price', 'amount',
+                    'barcode', 'type', 'is_active')
+    list_editable = ('amount', 'is_active')
+    list_filter = ('is_active', 'type')
+    search_fields = ('name', 'barcode')
 
     @admin.display(description='Название')
     def get_short_name(self, obj):
@@ -30,11 +38,18 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(ProductType)
 class ProductTypeAdmin(admin.ModelAdmin):
-    list_display = ('get_short_name', 'description')
+    inlines = (ProductInLine,)
+    list_display = ('get_short_name', 'get_short_description')
 
     @admin.display(description='Название')
     def get_short_name(self, obj):
         return str(obj)
+
+    @admin.display(description='Описание')
+    def get_short_description(self, obj):
+        description = obj.description
+        return (description[:100] + '...' if len(description) > 100
+                else description)
 
 
 @admin.register(ProductPrice)
