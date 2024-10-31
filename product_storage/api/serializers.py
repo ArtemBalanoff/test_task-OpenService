@@ -33,6 +33,25 @@ class ProductCreateReadSerializer(serializers.ModelSerializer):
         return product
 
 
+class ProductBulkCreateSerializer(serializers.Serializer):
+    products = ProductCreateReadSerializer(many=True)
+
+    def create(self, validated_data):
+        validated_data = validated_data.get('products')
+        prices_data = [data.pop('price') for data in validated_data]
+        product_list = [Product(**el_dict) for el_dict in validated_data]
+        products = Product.objects.bulk_create(product_list,
+                                               unique_fields=('barcode',))
+        prices = [ProductPrice(**price_data, product=product)
+                  for price_data, product in zip(prices_data, products)]
+        ProductPrice.objects.bulk_create(prices)
+        return products
+
+    def to_representation(self, instances):
+        return {'products': [ProductCreateReadSerializer(instance).data
+                             for instance in instances]}
+
+
 class ProductUpdateSerializer(ProductCreateReadSerializer):
     '''Используем отдельный сериализатор для patch-запросов,
     чтобы количество можно было изменять только относительно'''

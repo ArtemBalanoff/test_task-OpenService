@@ -10,6 +10,9 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+# ---------- INSTANCES ----------
+
+
 @pytest.fixture(autouse=True)
 def enable_db_access_for_all_tests(db):
     pass
@@ -78,9 +81,53 @@ def product_list(product_type):
     products = Product.objects.all()
     ProductPrice.objects.bulk_create(ProductPrice(
         price=100 - idx * 10,
-        currency='rub',
+        currency=['rub', 'dollar', 'euro'][idx],
         product=product) for idx, product in enumerate(products))
     return products
+
+
+# ---------- DATA ----------
+
+
+@pytest.fixture
+def product_create_data(product_type):
+    return {'name': 'Nokia Phone',
+            'amount': 100,
+            'barcode': '12345678',
+            'type': product_type.id,
+            'price': {'price': 100.00, 'currency': 'rub'}}
+
+
+@pytest.fixture
+def product_patch_data(product_type_2):
+    return {'name': 'Шкаф',
+            'is_active': False,
+            'barcode': '1234567890123',
+            'type': product_type_2.id,
+            'price': {'price': 200.00, 'currency': 'dollar'}}
+
+
+@pytest.fixture
+def product_bulk_create_data(product_type):
+    return {'products': [{'name': str(idx), 'amount': idx,
+                          'barcode': str(12345678 + idx),
+                          'price': {'price': 100, 'currency': 'rub'},
+                          'type': product_type.id
+                          }for idx in range(3)]}
+
+
+@pytest.fixture
+def product_type_data():
+    return {'name': 'Овощи',
+            'description': 'Хранится в отделе с высокой влажностью'}
+
+
+@pytest.fixture
+def product_type_patch_data():
+    return {'name': 'Запчасти', 'description': 'Очень ценный груз'}
+
+
+# ---------- URLS ----------
 
 
 @pytest.fixture
@@ -92,6 +139,22 @@ def product_list_url():
 def product_detail_url(product):
     return reverse('product-detail', args=(product.id,))
 
+
+@pytest.fixture
+def product_bulk_create():
+    return reverse('product-bulk-create')
+
+
+@pytest.fixture
+def update_amount_url(product):
+    return reverse('product-update-amount', args=(product.id,))
+
+
 @pytest.fixture
 def product_type_list_url():
     return reverse('product_type-list')
+
+
+@pytest.fixture
+def product_type_detail_url(product_type):
+    return reverse('product_type-detail', args=(product_type.id,))

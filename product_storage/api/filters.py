@@ -14,8 +14,12 @@ class ProductFilter(filters.FilterSet):
     date_updated_before = filters.DateTimeFilter(
         field_name='date_updated', lookup_expr='lte')
     is_active = filters.BooleanFilter(field_name='is_active')
+    currency = filters.CharFilter(field_name='price__currency',
+                                  lookup_expr='iexact')
 
     class Meta:
         model = Product
-        fields = ('name', 'min_price', 'max_price', 'is_active',
-                  'date_updated_after', 'date_updated_before')
+        fields = (
+            'name', 'min_price', 'max_price', 'is_active',
+            'date_updated_after', 'date_updated_before',
+            'currency')
